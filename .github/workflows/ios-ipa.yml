@@ -1,0 +1,37 @@
+name: Build LibreRadio iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Install XcodeGen
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install xcodegen
+
+      - name: Generate Xcode project
+        run: |
+          xcodegen generate
+
+      - name: Show Xcode information
+        run: |
+          xcodebuild -version
+          xcodebuild -list
+
+      - name: Build iOS
+        run: |
+          xcodebuild \
+            -scheme LibreRadio \
+            -project LibreRadio.xcodeproj \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
