@@ -33,18 +33,30 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build
 
-      - name: Locate application
+      - name: Check build output
         run: |
-          find . -name "LibreRadio.app" -type d
+          echo "Contenu du dossier build :"
+          find build -maxdepth 6 -type d -name "*.app" -print
 
       - name: Create IPA
         run: |
+          APP_PATH="build/Build/Products/Release-iphoneos/LibreRadio.app"
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "ERREUR : LibreRadio.app introuvable"
+            echo "Recherche complète :"
+            find build -type d -name "*.app" -print
+            exit 1
+          fi
+
           mkdir -p Payload
-          cp -R "$(find . -name 'LibreRadio.app' -type d | head -1)" Payload/LibreRadio.app
+          cp -R "$APP_PATH" Payload/LibreRadio.app
+
           zip -r LibreRadio.ipa Payload
 
       - name: Upload IPA
